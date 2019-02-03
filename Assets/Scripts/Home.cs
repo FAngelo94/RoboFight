@@ -14,4 +14,9 @@ public class Home : MonoBehaviour
     {
         SceneManager.LoadScene("Play", LoadSceneMode.Single);
     }
+
+    public void Exit()
+    {
+        Application.Quit();
+    }
 }
