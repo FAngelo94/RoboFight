@@ -7,15 +7,17 @@ using UnityEngine.UI;
 public class Fight : MonoBehaviour
 {
     public GameObject[] Players;
-    public GameObject TimerFight;
-    public GameObject PlayerTurn;
+    public GameObject TimerDuel;
+    public GameObject TimerUpdate;
+    public GameObject TimerRumble;
 
     public AudioClip ChangeTurn;
     public AudioClip ChangeTimer;
     private AudioSource Audio;
 
+    private bool IsDuelTime;
     private bool IsUpdateTime;
-    private bool IsFightTime;
+    private bool IsRoyalRumble;
 
     private static string DefaultTimeFight = "30";
     private static string DefaultTimeUpdate = "30";
@@ -23,8 +25,9 @@ public class Fight : MonoBehaviour
     void Start()
     {
         Initialized();
+        IsDuelTime = false;
         IsUpdateTime = false;
-        IsFightTime = false;
+        IsRoyalRumble = false;
         Audio = transform.GetComponent<AudioSource>();
         StartCoroutine(IncrementTimerUpdate());
         StartCoroutine(IncrementTimerFight());
@@ -58,19 +61,19 @@ public class Fight : MonoBehaviour
     public void Play(string timerName)
     {
         IsUpdateTime = false;
-        IsFightTime = false;
+        IsRoyalRumble = false;
         if (timerName == "Update")
             IsUpdateTime = true;
-        if (timerName == "Fight")
-            IsFightTime = true;
+        if (timerName == "Rumble")
+            IsRoyalRumble = true;
     }
 
     public void Stop(string timerName)
     {
         if (timerName == "Update")
             IsUpdateTime = false;
-        if (timerName == "Fight")
-            IsFightTime = false;
+        if (timerName == "Rumble")
+            IsRoyalRumble = false;
     }
 
     public void Next(string timerName)
@@ -91,10 +94,10 @@ public class Fight : MonoBehaviour
 
         if (timerName == "Update")
         {
-            Text timeUpdate = PlayerTurn.transform.Find("Timer").GetComponent<Text>();
+            Text timeUpdate = TimerUpdate.transform.Find("Timer").GetComponent<Text>();
             timeUpdate.text = PlayerPrefs.GetInt("TimeUpdate").ToString();
             timeUpdate.text = timeUpdate.text == "0" ? DefaultTimeUpdate : timeUpdate.text;
-            Text turnUpdate = PlayerTurn.transform.Find("Player").GetComponent<Text>();
+            Text turnUpdate = TimerUpdate.transform.Find("Player").GetComponent<Text>();
             int turn = int.Parse(turnUpdate.text);
             turn += change;
             if (turn > players)
@@ -103,12 +106,12 @@ public class Fight : MonoBehaviour
                 turn = players;
             turnUpdate.text = turn.ToString();
         }
-        if (timerName == "Fight")
+        if (timerName == "Rumble")
         {
-            Text timeFight = TimerFight.transform.Find("Timer").GetComponent<Text>();
+            Text timeFight = TimerRumble.transform.Find("Timer").GetComponent<Text>();
             timeFight.text = PlayerPrefs.GetInt("TimeFight").ToString();
             timeFight.text = timeFight.text == "0" ? DefaultTimeFight : timeFight.text;
-            Text turnFight = TimerFight.transform.Find("Player").GetComponent<Text>();
+            Text turnFight = TimerRumble.transform.Find("Player").GetComponent<Text>();
             int turn = int.Parse(turnFight.text);
             turn += change;
             if (turn > players)
@@ -117,25 +120,44 @@ public class Fight : MonoBehaviour
                 turn = players;
             turnFight.text = turn.ToString();
         }
+        if (timerName == "Duel")
+        {
+            Text timeDuel = TimerDuel.transform.Find("Timer").GetComponent<Text>();
+            timeDuel.text = PlayerPrefs.GetInt("TimeDuel").ToString();
+            timeDuel.text = timeDuel.text == "0" ? DefaultTimeFight : timeDuel.text;
+            Text turnDuel = TimerDuel.transform.Find("Player").GetComponent<Text>();
+            int turn = int.Parse(turnDuel.text);
+            turn = turn == 0 ? 1 : 0;
+            turnDuel.text = turn.ToString();
+        }
     }
 
     public void Reset(string timerName)
     {
         if (timerName == "Update")
         {
-            Text timeUpdate = PlayerTurn.transform.Find("Timer").GetComponent<Text>();
+            Text timeUpdate = TimerUpdate.transform.Find("Timer").GetComponent<Text>();
             timeUpdate.text = PlayerPrefs.GetInt("TimeUpdate").ToString();
             timeUpdate.text = timeUpdate.text == "0" ? DefaultTimeUpdate : timeUpdate.text;
-            Text turnUpdate = PlayerTurn.transform.Find("Player").GetComponent<Text>();
+            Text turnUpdate = TimerUpdate.transform.Find("Player").GetComponent<Text>();
             turnUpdate.text = PlayerPrefs.GetInt("TurnUpdate").ToString();
             turnUpdate.text = turnUpdate.text == "0" ? "1" : turnUpdate.text;
         }
-        if (timerName == "Fight")
+        if (timerName == "Rumble")
         {
-            Text timeFight = TimerFight.transform.Find("Timer").GetComponent<Text>();
+            Text timeFight = TimerRumble.transform.Find("Timer").GetComponent<Text>();
             timeFight.text = PlayerPrefs.GetInt("TimeFight").ToString();
             timeFight.text = timeFight.text == "0" ? DefaultTimeFight : timeFight.text;
-            Text turnFight = TimerFight.transform.Find("Player").GetComponent<Text>();
+            Text turnFight = TimerRumble.transform.Find("Player").GetComponent<Text>();
+            turnFight.text = PlayerPrefs.GetInt("TurnFight").ToString();
+            turnFight.text = turnFight.text == "0" ? "1" : turnFight.text;
+        }
+        if (timerName == "Duel")
+        {
+            Text timeDuel = TimerDuel.transform.Find("Timer").GetComponent<Text>();
+            timeDuel.text = PlayerPrefs.GetInt("TimeDuel").ToString();
+            timeDuel.text = timeDuel.text == "0" ? DefaultTimeFight : timeDuel.text;
+            Text turnFight = TimerDuel.transform.Find("Player").GetComponent<Text>();
             turnFight.text = PlayerPrefs.GetInt("TurnFight").ToString();
             turnFight.text = turnFight.text == "0" ? "1" : turnFight.text;
         }
@@ -157,7 +179,7 @@ public class Fight : MonoBehaviour
             if (points.text == "")
                 points.text = "0";
             Reset("Update");
-            Reset("Fight");
+            Reset("Rumble");
         }
         for(int j = players; j < 6; j++)
         {
@@ -172,9 +194,9 @@ public class Fight : MonoBehaviour
             yield return new WaitForSeconds(1);
             if (IsUpdateTime)
             {
-                Text timeUpdate = PlayerTurn.transform.Find("Timer").GetComponent<Text>();
+                Text timeUpdate = TimerUpdate.transform.Find("Timer").GetComponent<Text>();
                 int time = int.Parse(timeUpdate.text);
-                Text turnUpdate = PlayerTurn.transform.Find("Player").GetComponent<Text>();
+                Text turnUpdate = TimerUpdate.transform.Find("Player").GetComponent<Text>();
                 int turn = int.Parse(turnUpdate.text);
                 int players = PlayerPrefs.GetInt("Players");
                 if (players == 0)
@@ -191,7 +213,7 @@ public class Fight : MonoBehaviour
                     }
                     else
                     {
-                        Play("Fight");
+                        Play("Rumble");
                         Reset("Update");
                         PlayClip(ChangeTimer);
                     }
@@ -205,11 +227,11 @@ public class Fight : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(1);
-            if (IsFightTime)
+            if (IsRoyalRumble)
             {
-                Text timeFight = TimerFight.transform.Find("Timer").GetComponent<Text>();
+                Text timeFight = TimerRumble.transform.Find("Timer").GetComponent<Text>();
                 int time = int.Parse(timeFight.text);
-                Text turnFight = PlayerTurn.transform.Find("Player").GetComponent<Text>();
+                Text turnFight = TimerUpdate.transform.Find("Player").GetComponent<Text>();
                 int turn = int.Parse(turnFight.text);
                 int players = PlayerPrefs.GetInt("Players");
                 if (players == 0)
@@ -221,13 +243,13 @@ public class Fight : MonoBehaviour
                 {
                     if (turn < players)
                     {
-                        Next("Fight");
+                        Next("Rumble");
                         PlayClip(ChangeTurn);
                     }
                     else
                     {
                         Play("Update");
-                        Reset("Fight");
+                        Reset("Rumble");
                         PlayClip(ChangeTimer);
                     }
                 }
